@@ -199,7 +199,6 @@ function onPhotosReceived() {
 
 function onLoadPhotos() {
     const albumEl = this;
-    console.log(albumEl);
     const albumId = albumEl.getAttribute('id');
 
     const xhr = new XMLHttpRequest();
@@ -209,8 +208,6 @@ function onLoadPhotos() {
 }
 
 //Loading albums and displaying them
-// functions for looking at albums
-
 function createAlbumList(albums) {
     const ulEl = document.createElement('ul');
 
@@ -310,7 +307,6 @@ function onCommentsReceived() {
     }
 
     const divPostC = document.getElementById(postId);
-    console.log(divPostC);
     if (divPostC.childNodes.length <= 1) {
         divPostC.appendChild(createCommentsForUser(comments));
     }
