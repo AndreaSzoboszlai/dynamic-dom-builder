@@ -2,6 +2,7 @@ const BASE_URL = 'https://jsonplaceholder.typicode.com';
 
 let usersDivEl;
 let postsDivEl;
+let albumsDivEl;
 let loadButtonEl;
 
 function createPostsList(posts) {
@@ -63,11 +64,15 @@ function createUsersTableHeader() {
     idTdEl.textContent = 'Id';
 
     const nameTdEl = document.createElement('td');
-    nameTdEl.textContent = 'Name';
+    nameTdEl.textContent = 'Name (click to view posts)';
+
+    const albumTdEl = document.createElement('td');
+    albumTdEl.textContent = 'View album';
 
     const trEl = document.createElement('tr');
     trEl.appendChild(idTdEl);
     trEl.appendChild(nameTdEl);
+    trEl.appendChild(albumTdEl);
 
     const theadEl = document.createElement('thead');
     theadEl.appendChild(trEl);
@@ -88,19 +93,33 @@ function createUsersTableBody(users) {
         const dataUserIdAttr = document.createAttribute('data-user-id');
         dataUserIdAttr.value = user.id;
 
+        // creating name cell
+        const albumUserIdAttr = document.createAttribute('album-user-id');
+        albumUserIdAttr.value = user.id;
 
-        const buttonEl = document.createElement('button');
-        buttonEl.textContent = user.name;
-        buttonEl.setAttributeNode(dataUserIdAttr);
-        buttonEl.addEventListener('click', onLoadPosts);
+        const buttonNameEl = document.createElement('button');
+        buttonNameEl.textContent = user.name;
+
+        const buttonAlbumEl = document.createElement('button');
+        buttonAlbumEl.textContent = user.name + '\'s album';
+
+        buttonNameEl.setAttributeNode(dataUserIdAttr);
+        buttonAlbumEl.setAttributeNode(albumUserIdAttr);
+
+        buttonNameEl.addEventListener('click', onLoadPosts);
+        buttonAlbumEl.addEventListener('click', onLoadAlbums);
 
         const nameTdEl = document.createElement('td');
-        nameTdEl.appendChild(buttonEl);
+        nameTdEl.appendChild(buttonNameEl);
+
+        const albumTdEl = document.createElement('td');
+        albumTdEl.appendChild(buttonAlbumEl);
 
         // creating row
         const trEl = document.createElement('tr');
         trEl.appendChild(idTdEl);
         trEl.appendChild(nameTdEl);
+        trEl.appendChild(albumTdEl);
 
         tbodyEl.appendChild(trEl);
     }
@@ -132,8 +151,61 @@ function onLoadUsers() {
     xhr.open('GET', BASE_URL + '/users');
     xhr.send();
 }
-//
 
+// functions for looking at albums
+
+function createAlbumList(albums) {
+    const ulEl = document.createElement('ul');
+
+    for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
+
+        // creating paragraph
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = album.title;
+
+        const pEl = document.createElement('p');
+        pEl.appendChild(strongEl);
+
+        const albumIdAttr = album.id;
+        strongEl.setAttribute('id', albumIdAttr);
+        //strongEl.addEventListener('click', onLoadPhotos);
+
+        // creating list item
+        const liEl = document.createElement('li');
+        liEl.appendChild(pEl);
+        ulEl.appendChild(liEl);
+    }
+
+    return ulEl;
+}
+
+function onAlbumsReceived() {
+    const text = this.responseText;
+    const albums = JSON.parse(text);
+
+    const albumId = albums[0].userId;
+    console.log(albumId);
+
+    const divAlbum = document.getElementById('albums-content');
+
+    while (divAlbum.firstChild) {
+        divAlbum.removeChild(divAlbum.firstChild);
+    }
+    divAlbum.appendChild(createAlbumList(albums));
+}
+
+function onLoadAlbums() {
+    const albumEl = this;
+    const userId = albumEl.getAttribute('album-user-id');
+
+    const xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', onAlbumsReceived);
+    xhr.open('GET', BASE_URL + '/albums?userId=' + userId);
+    xhr.send();
+}
+
+// functions for clicking on a post and seeing the comments for them
 function createCommentsForUser(comments) {
     const ulCommentEl = document.createElement('ul');
     ulCommentEl.classList.add('comments');
@@ -145,7 +217,7 @@ function createCommentsForUser(comments) {
     for (let i = 0; i < comments.length; i++) {
         const comment = comments[i];
         ulCommentEl.setAttribute('id', comment.postId);
-        // creating paragraph
+
         const strongCEl = document.createElement('strong');
         strongCEl.textContent = comment.name;
 
@@ -153,7 +225,6 @@ function createCommentsForUser(comments) {
         pCEl.appendChild(strongCEl);
         pCEl.appendChild(document.createTextNode(`: ${comment.body}`));
 
-        // creating list item
         const liCEl = document.createElement('li');
         liCEl.appendChild(pCEl);
 
@@ -168,7 +239,6 @@ function onCommentsReceived() {
     const comments = JSON.parse(text1);
 
     const postId = comments[0].postId;
-
     const idList = document.getElementsByClassName('comments');
 
     for (let i = 0; i < idList.length; i++) {
@@ -190,7 +260,7 @@ function onCommentsReceived() {
 function onLoadComments() {
     const pt = this;
     const postId = pt.getAttribute('post-id');
-    //console.log(postId);
+
     const xhr = new XMLHttpRequest();
     xhr.addEventListener('load', onCommentsReceived);
     xhr.open('GET', BASE_URL + '/comments?postId=' + postId);
@@ -200,6 +270,7 @@ function onLoadComments() {
 document.addEventListener('DOMContentLoaded', (event) => {
     usersDivEl = document.getElementById('users');
     postsDivEl = document.getElementById('posts');
+    albumsDivEl = document.getElementById('albums');
     loadButtonEl = document.getElementById('load-users');
     loadButtonEl.addEventListener('click', onLoadUsers);
 });
