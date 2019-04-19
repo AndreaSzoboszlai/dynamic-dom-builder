@@ -37,6 +37,7 @@ function createPostsList(posts) {
 
 function onPostsReceived() {
     postsDivEl.style.display = 'block';
+    albumsDivEl.style.display = 'none';
 
     const text = this.responseText;
     const posts = JSON.parse(text);
@@ -179,30 +180,26 @@ function createPhotoList(photos) {
 function onPhotosReceived() {
     const text = this.responseText;
     const photos = JSON.parse(text);
-    console.log(photos);
     const albumId = photos[0].albumId;
-    console.log(albumId);
+
 
     const photoList = document.getElementsByClassName('photos');
-    console.log('List:' + photoList);
     for (let i = 0; i < photoList.length; i++) {
         const photo = photoList[i];
-        if (photo.getAttribute('album-id') !== albumId) {
+        if (photo.getAttribute('id') !== albumId) {
             photo.remove();
         }
     }
 
     const divClickedAlbum = document.getElementById(albumId);
-
-    console.log('Clicked: ' + divClickedAlbum);
-    while (divClickedAlbum.firstChild) {
-        divClickedAlbum.removeChild(divClickedAlbum.firstChild);
+    if (divClickedAlbum.childNodes.length <= 1) {
+        divClickedAlbum.appendChild(createPhotoList(photos));
     }
-    divClickedAlbum.appendChild(createPhotoList(photos));
 }
 
 function onLoadPhotos() {
     const albumEl = this;
+    console.log(albumEl);
     const albumId = albumEl.getAttribute('id');
 
     const xhr = new XMLHttpRequest();
@@ -242,6 +239,10 @@ function createAlbumList(albums) {
 }
 
 function onAlbumsReceived() {
+
+    postsDivEl.style.display = 'none';
+    albumsDivEl.style.display = 'block';
+
     const text = this.responseText;
     const albums = JSON.parse(text);
 
