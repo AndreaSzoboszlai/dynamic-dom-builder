@@ -211,6 +211,11 @@ function onLoadPhotos() {
 function createAlbumList(albums) {
     const ulEl = document.createElement('ul');
 
+    const h2El = document.createElement('h2');
+    h2El.textContent = 'Albums';
+    ulEl.appendChild(h2El);
+
+
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
 
